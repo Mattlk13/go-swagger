@@ -31,6 +31,7 @@ Help Options:
           --main-package=                                                         the location of the generated main. Defaults to cmd/{name}-server
       -P, --principal=                                                            the model to use for the security principal
           --default-scheme=                                                       the default scheme for this API (default: http)
+          --principal-is-interface                                                the security principal provided is an interface, not a struct
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)
           --default-consumes=                                                     the default mime type that API operations consume (default: application/json)
           --skip-models                                                           no models will be generated when this flag is specified
@@ -64,11 +65,13 @@ Help Options:
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
           --keep-spec-order                                                       keep schema properties order identical to spec file
+          --struct-tags                                                           specify custom struct tags for third-party libraries, repeat for multiple (defaults to json)
 
     Options for operation generation:
       -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
           --tags=                                                                 the tags to include, if not specified defaults to all
       -a, --api-package=                                                          the package to save the operations (default: operations)
+          --with-enum-ci                                                          set all enumerations case-insensitive by default
           --skip-tag-packages                                                     skips the generation of tag-based operation packages, resulting in a flat generation
 ```
 
@@ -207,6 +210,8 @@ func configureAPI(api *operations.ToDoListAPI) http.Handler {
 
 When you look at the code for the configureAPI method then you'll notice that the api object has properties for consumers.
 A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.
+
+Often, this will be JSON. If you want to use XML, additionally you have to enable XML compatible models when generating the server. For that, you have to set the command options `--default-consumes` or `--default-produces` to an XML mime type like `application/xml`. For more details on using XML, also see the [client generation](client.md).
 
 The interface definitions for consumers and producers look like this:
 

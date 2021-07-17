@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
@@ -79,10 +80,13 @@ type sharedCommand interface {
 type schemeOptions struct {
 	Principal     string `short:"P" long:"principal" description:"the model to use for the security principal"`
 	DefaultScheme string `long:"default-scheme" description:"the default scheme for this API" default:"http"`
+
+	PrincipalIface bool `long:"principal-is-interface" description:"the security principal provided is an interface, not a struct"`
 }
 
 func (so schemeOptions) apply(opts *generator.GenOpts) {
 	opts.Principal = so.Principal
+	opts.PrincipalCustomIface = so.PrincipalIface
 	opts.DefaultScheme = so.DefaultScheme
 }
 
@@ -94,6 +98,9 @@ type mediaOptions struct {
 func (m mediaOptions) apply(opts *generator.GenOpts) {
 	opts.DefaultProduces = m.DefaultProduces
 	opts.DefaultConsumes = m.DefaultConsumes
+
+	const xmlIdentifier = "xml"
+	opts.WithXML = strings.Contains(opts.DefaultProduces, xmlIdentifier) || strings.Contains(opts.DefaultConsumes, xmlIdentifier)
 }
 
 // WithShared adds the shared options group
@@ -116,6 +123,7 @@ type sharedOptions struct {
 	AllowTemplateOverride bool           `long:"allow-template-override" description:"allows overriding protected templates" group:"shared"`
 	SkipValidation        bool           `long:"skip-validation" description:"skips validation of spec prior to generation" group:"shared"`
 	DumpData              bool           `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files" group:"shared"`
+	StrictResponders      bool           `long:"strict-responders" description:"Use strict type for the handler return value"`
 	FlattenCmdOptions
 }
 
@@ -129,6 +137,7 @@ func (s sharedOptions) apply(opts *generator.GenOpts) {
 	opts.DumpData = s.DumpData
 	opts.FlattenOpts = s.FlattenCmdOptions.SetFlattenOptions(opts.FlattenOpts)
 	opts.Copyright = string(s.CopyrightFile)
+	opts.StrictResponders = s.StrictResponders
 
 	swag.AddInitialisms(s.AdditionalInitialisms...)
 }
